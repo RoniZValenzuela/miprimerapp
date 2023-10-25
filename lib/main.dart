@@ -1,9 +1,15 @@
+import 'dart:js';
+
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
+}
+
+class MyAppState extends ChangeNotifier{
+  var current = WordPair.random();
 }
 
 class MyApp extends StatelessWidget {
@@ -13,14 +19,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     print("algo");
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+    return ChangeNotifierProvider(
+      create: (context) => MyAppState(),
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        home: const MyHomePage(title: 'Flutter Demo Home Page'),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -31,14 +40,14 @@ class MyHomePage extends StatelessWidget {
   final String title;
 
   @override
-  Widget build(BuildContext) {
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
     return Scaffold(
       body: Column(
         children: [
           Text("Idea aleatoria"),
-          Text("Aqui va la idea")
+          Text(appState.current.asLowerCase)
         ],
-
       ),
     );
   } 
