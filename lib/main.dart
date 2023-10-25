@@ -10,6 +10,10 @@ void main() {
 
 class MyAppState extends ChangeNotifier{
   var current = WordPair.random();
+
+  void getSiguiente() {
+    current = WordPair()
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -46,7 +50,10 @@ class MyHomePage extends StatelessWidget {
       body: Column(
         children: [
           Text("Idea aleatoria"),
-          Text(appState.current.asLowerCase)
+          Text(appState.current.asLowerCase),
+          ElevatedButton(  
+            onPressed: print("Boton presionado");
+            child: Text("siguiente"))
         ],
       ),
     );
