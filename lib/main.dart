@@ -29,9 +29,16 @@ class MyApp extends StatelessWidget {
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   var favoritos = <WordPair>[];
+  var historial = <WordPair>[];
+
+  GlobalKey? MiHistorialListKey;
 
   void getSiguiente() {
+    historial.insert(0, current);
+    var animatedList = MiHistorialListKey?.currentContext;
+    animatedList?.insertItem(0);
     current = WordPair.random();
+    print("Historial $historial");
     notifyListeners();
   }
 
@@ -175,6 +182,7 @@ class FavoritosPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
+
     if (appState.favoritos.isEmpty) {
       return Center(child: Text("Aun no hay favoritos"));
     }
@@ -185,11 +193,62 @@ class FavoritosPage extends StatelessWidget {
           child: Text("Se han elegido ${appState.favoritos.length} favoritos"),
         ),
         for (var name in appState.favoritos)
-          (ListTile(
+          ListTile(
             leading: Icon(Icons.favorite),
-            title: Text(name.asLowerCase),
-          )),
+            title: Text(
+                name.asPascalCase), // Usar asPascalCase en lugar de asLowerCase
+          ),
       ],
+    );
+  }
+}
+
+class MiHistorialListView extends StatefulWidget {
+  final GlobalKey<State> key = GlobalKey<State>();
+
+  static const Gradient _gradient = LinearGradient(
+    colors: [Colors.transparent, Colors.black],
+    stops: [0.0, 0.5],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  MiHistorialListView({Key? key}) : super(key: key);
+
+  @override
+  State<MiHistorialListView> createState() => MiHistorialListViewState();
+}
+
+class MiHistorialListViewState extends State<MiHistorialListView> {
+  @override
+  Widget build(BuildContext context) {
+    final appState = context.watch<MyAppState>();
+    return ShaderMask(
+      shaderCallback: (Rect bounds) => _maskingGradient.createShader(bounds),
+      blendMode: BlendMode.dstIn,
+      child: AnimatedList(
+        key: widget.key,
+        reverse: true,
+        padding: EdgeInsets.only(top: 100),
+        initialItemCount: appState.historial.length,
+        itemBuilder: (context, index, animation) {
+          final idea = appState.historial[index];
+          return SizeTransition(
+            sizeFactor: animation,
+            child: Center(
+              child: TextButton.icon(
+                onPressed: () {
+                  appState.toggleFavoritos();
+                },
+                icon: appState.favoritos.contains(idea)
+                    ? Icon(Icons.favorite, size: 12)
+                    : SizedBox(),
+                label: Text(idea.asPascalCase),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
