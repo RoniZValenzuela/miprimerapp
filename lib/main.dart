@@ -7,7 +7,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,8 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.deepOrange),
+          colorScheme:
+              ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 204, 65, 55)),
           useMaterial3: true,
         ),
         home: const MyHomePage(),
@@ -27,7 +28,6 @@ class MyApp extends StatelessWidget {
 
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
-
   var favoritos = <WordPair>[];
 
   void getSiguiente() {
@@ -35,7 +35,7 @@ class MyAppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleFavorito() {
+  void toggleFavoritos() {
     if (favoritos.contains(current)) {
       favoritos.remove(current);
     } else {
@@ -45,9 +45,15 @@ class MyAppState extends ChangeNotifier {
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({Key? key});
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
 
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  var selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,50 +61,50 @@ class MyHomePage extends StatelessWidget {
         children: [
           SafeArea(
             child: NavigationRail(
-                extended: false,
-                destinations: [
-                  NavigationRailDestination(
-                    icon: Icon(Icons.home),
-                    label: Text("Inicio"),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.favorite),
-                    label: Text("Favoritos"),
-                  ),
-                ],
-                selectedIndex: 0,
-                onDestinationSelected: (value) {
-                  print("Selection: $value");
-                }),
-          ),
-          Expanded(
-            child: Container(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              child: GeneratorPage(),
+              extended: false,
+              destinations: [
+                NavigationRailDestination(
+                    icon: Icon(Icons.home), label: Text("Inicio")),
+                NavigationRailDestination(
+                    icon: Icon(Icons.favorite), label: Text("Favoritos"))
+              ],
+              selectedIndex: selectedIndex,
+              onDestinationSelected: (value) {
+                setState(() {
+                  selectedIndex = value;
+                });
+              },
             ),
           ),
+          Expanded(
+              child: Container(
+            color: Theme.of(context).colorScheme.primaryContainer,
+            child: GeneratorPage(),
+          )),
         ],
       ),
     );
   }
 }
 
-class BigCard extends StatelessWidget {
+class Bigcard extends StatelessWidget {
   final WordPair idea;
-  const BigCard({Key? key, required this.idea});
+
+  const Bigcard({super.key, required this.idea});
 
   @override
   Widget build(BuildContext context) {
     final tema = Theme.of(context);
-    final textStyle =
-        tema.textTheme.headline5!.copyWith(color: tema.colorScheme.onPrimary);
+    final textStyle = tema.textTheme.displayMedium!.copyWith(
+      color: tema.colorScheme.onPrimary,
+    );
 
     return Card(
       color: tema.colorScheme.primary,
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Text(
-          idea.asPascalCase,
+          idea.asLowerCase,
           style: textStyle,
           semanticsLabel: "${idea.first} ${idea.second}",
         ),
@@ -108,45 +114,43 @@ class BigCard extends StatelessWidget {
 }
 
 class GeneratorPage extends StatelessWidget {
-  GeneratorPage({Key? key});
-
   @override
   Widget build(BuildContext context) {
-    var appState = context.read<MyAppState>();
+    var appState = context.watch<MyAppState>();
     var idea = appState.current;
     IconData icon;
-
     if (appState.favoritos.contains(idea)) {
       icon = Icons.favorite;
     } else {
-      icon = Icons.favorite_border_outlined;
+      icon = Icons.favorite_outline;
     }
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          BigCard(idea: appState.current),
-          SizedBox(height: 20.0),
+          Bigcard(idea: (appState.current)),
+          SizedBox(
+            height: 10,
+          ),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               ElevatedButton.icon(
-                onPressed: () {
-                  appState.toggleFavorito();
-                },
-                icon: Icon(icon),
-                label: Text('Me Gusta'),
+                  onPressed: () {
+                    appState.toggleFavoritos();
+                  },
+                  icon: Icon(icon),
+                  label: Text("Me gusta")),
+              SizedBox(
+                width: 10,
               ),
-              SizedBox(width: 10.0),
               ElevatedButton(
-                onPressed: () {
-                  appState.getSiguiente();
-                },
-                child: Text('Siguiente'),
-              ),
+                  onPressed: () {
+                    appState.getSiguiente();
+                  },
+                  child: Text("Siguiente")),
             ],
-          ),
+          )
         ],
       ),
     );
